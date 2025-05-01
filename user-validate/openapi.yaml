@@ -1,0 +1,63 @@
+openapi: 3.0.0
+info:
+  title: User Validation API
+  description: This API validates if a given username is valid.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8080
+    description: Development server
+paths:
+  /validate-user:
+    get:
+      summary: Validates a username
+      description: Returns a JSON object indicating whether the username is valid.
+      parameters:
+        - in: query
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username to validate
+      responses:
+        '200':
+          description: A JSON object with the validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: Indicates if the username is valid or not
+                  message:
+                    type: string
+                    description: A message detailing the validation result
+        '400':
+          description: Bad Request - Invalid Request Parameters
+  /validate-phone:
+    get:
+      summary: Validates a phone number
+      description: Returns a JSON object indicating whether the phone number is valid.
+      parameters:
+        - in: query
+          name: phone
+          required: true
+          schema:
+            type: string
+          description: The phone number to validate
+      responses:
+        '200':
+          description: A JSON object with the validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: Indicates if the username is valid or not
+                  message:
+                    type: string
+                    description: A message detailing the validation result
+        '400':
+          description: Bad Request - Invalid Request Parameters
