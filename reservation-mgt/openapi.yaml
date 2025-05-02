@@ -34,7 +34,6 @@ tags:
     description: In-memory reservations list cache API
 paths:
   /reservations:
-    summary: List all reservations
     get:
       summary: List all reservations
       operationId: ListAllReservations
@@ -48,7 +47,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ReservationArray"
   /reservations/{reservationId}:
-    summary: Get reservation by ID
     get:
       tags:
         - Reservation Management
