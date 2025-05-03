@@ -81,10 +81,35 @@ def health_check():
 # route relevant to get all reservations
 @app.route('/rs/reservations', methods=['GET'])
 def get_reservations():
-    return str(json.dumps(reservations))
+    return getAllReservations()
+
 
 @app.route('/rs/hotels', methods=['GET'])
 def list_all_hotels():
+    return getAllHotels()
+
+@app.route('/rs/hotels/<hotelId>', methods=['GET'])
+def get_hotel_by_id(hotelId):
+    return getHotelById(hotelId)
+
+def getHotelById(hotelId):
+    try:
+        conn = cnx_pool.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name FROM hotel WHERE id = %s", (hotelId,))
+        hotel = cursor.fetchone()
+        cursor.close()
+
+        if hotel is None:
+            return jsonify({"error": "Hotel not found"}), 404
+
+        # Format response according to schema
+        hotel_data = {"id": hotel[0], "name": hotel[1]}
+        return jsonify(hotel_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def getAllHotels():
     try:
         conn = cnx_pool.get_connection()
         cursor = conn.cursor()
@@ -98,15 +123,93 @@ def list_all_hotels():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def getAllReservations():
+    try:
+        conn = cnx_pool.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT 
+                hrr.id,
+                hrr.from_date,
+                hrr.to_date,
+                h.id as hotel_id,
+                h.name as hotel_name,
+                hr.id as room_id,
+                hr.type as room_type,
+                u.id as user_id,
+                u.name as user_name,
+                u.contact as user_contact
+            FROM hotel_room_reservation hrr
+            JOIN hotel h ON hrr.hotel_id = h.id
+            JOIN hotel_room hr ON hrr.room_id = hr.id
+            JOIN qb_user u ON hrr.user_id = u.id
+        """)
+        reservations = cursor.fetchall()
+        cursor.close()
+        # Convert date objects to string format before JSON serialization
+        formatted_reservations = []
+        for res in reservations:
+            formatted_res = {
+                'id': res[0],
+                'from_date': res[1].strftime('%Y-%m-%d'),
+                'to_date': res[2].strftime('%Y-%m-%d'), 
+                'hotel_id': res[3],
+                'hotel_name': res[4],
+                'room_id': res[5],
+                'room_type': res[6],
+                'user_id': res[7],
+                'user_name': res[8],
+                'user_contact': res[9]
+            }
+            formatted_reservations.append(formatted_res)
+        return jsonify(formatted_reservations)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # gives a reservation created by the user considering the reservationId
 def getReservation(reservationId):
-    print("getReservation")
-    for reservation in reservations:
-        if reservation["reservationId"] == reservationId:
-            print(type(json.dumps(reservation)))
-            return str(json.dumps(reservation))
-    return None
+    try:
+        conn = cnx_pool.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT 
+                hrr.id,
+                hrr.from_date,
+                hrr.to_date,
+                h.id as hotel_id,
+                h.name as hotel_name,
+                hr.id as room_id,
+                hr.type as room_type,
+                u.id as user_id,
+                u.name as user_name,
+                u.contact as user_contact
+            FROM hotel_room_reservation hrr
+            JOIN hotel h ON hrr.hotel_id = h.id
+            JOIN hotel_room hr ON hrr.room_id = hr.id
+            JOIN qb_user u ON hrr.user_id = u.id
+            WHERE hrr.id = %s
+        """, (reservationId,))
+        reservation = cursor.fetchone()
+        cursor.close()
+        
+        if not reservation:
+            return jsonify({"error": "Reservation not found"}), 404
+            
+        formatted_res = {
+            'id': reservation[0],
+            'from_date': reservation[1].strftime('%Y-%m-%d'),
+            'to_date': reservation[2].strftime('%Y-%m-%d'),
+            'hotel_id': reservation[3], 
+            'hotel_name': reservation[4],
+            'room_id': reservation[5],
+            'room_type': reservation[6],
+            'user_id': reservation[7],
+            'user_name': reservation[8],
+            'user_contact': reservation[9]
+        }
+        return jsonify(formatted_res)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # adds a reservation to the list of reservations
 def addReservation(request):

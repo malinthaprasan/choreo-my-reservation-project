@@ -175,15 +175,38 @@ components:
     Reservation:
       type: object
       properties:
-        reservationCreator:
+        id:
+          type: integer
+          example: 1
+        from_date:
           type: string
-          example: "Billy Wilson"
-        reservationId:
+          format: date
+          example: "2025-05-10"
+        to_date:
           type: string
-          example: "1233"
-        contact:
+          format: date
+          example: "2025-05-12"
+        hotel_id:
+          type: integer
+          example: 1
+        hotel_name:
           type: string
-          example: "011-123-4567"
+          example: "Ocean View Resort"
+        room_id:
+          type: integer
+          example: 1
+        room_type:
+          type: string
+          example: "Deluxe"
+        user_id:
+          type: integer
+          example: 1
+        user_name:
+          type: string
+          example: "Alice Johnson"
+        user_contact:
+          type: string
+          example: "alice@example.com"
     ReservationArray:
       type: array
       items:
