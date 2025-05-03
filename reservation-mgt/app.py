@@ -8,6 +8,11 @@ from types import SimpleNamespace
 
 app = Flask(__name__)
 
+print("=== start env variables ==")
+for key, value in os.environ.items():
+    print(f"{key}={value}")
+print("=== end env variables ====")
+
 # defines initial reservations
 with open('data.txt') as f:
     reservations = ast.literal_eval(f.read())
