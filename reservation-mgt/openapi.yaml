@@ -18,12 +18,15 @@ openapi: 3.0.3
 info:
   title: Reservation Management - Python REST API
   description: >-
-    This is a sample API specification for a simple reservation application with in-memory cache
-    written in Python.
+    This is a sample API specification for a simple hotel room reservation application written in Python.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
+  contact:
+    name: QuickBooking LLC.
+    url: https://www.quickbooking.com/
+    email: info@quickbooking.com
 externalDocs:
   description: Choreo
   url: https://choreo.dev
@@ -33,9 +36,50 @@ tags:
   - name: reservations
     description: In-memory reservations list cache API
 paths:
+  /hotels:
+    get:
+      summary: List all hotels
+      description: Get a list of all available hotels
+      operationId: ListAllHotels
+      tags:
+        - Hotels
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Hotel"
+  /hotels/{id}:
+    get:
+      summary: Get hotel by ID
+      description: Get details of a specific hotel by its ID
+      operationId: GetHotelById
+      tags:
+        - Hotels
+      parameters:
+        - name: id
+          in: path
+          description: ID of the hotel to retrieve
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hotel"
+        "404":
+          description: Hotel not found
   /reservations:
     get:
       summary: List all reservations
+      description: List all reservations
       operationId: ListAllReservations
       tags:
         - reservations
@@ -60,10 +104,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/reservationPayload"    
+              $ref: "#/components/schemas/Reservation"    
 
   /reservations/{reservationId}:
     get:
+      description: Get single reservation
       tags:
         - Reservation Management
       summary: Get reservation by ID
@@ -81,7 +126,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/reservationPayload"
+                $ref: "#/components/schemas/Reservation"
         "404":
           description: id not found
     put:
@@ -106,7 +151,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/reservationPayload"
+                $ref: "#/components/schemas/Reservation"
     delete:
       tags:
         - Reservation Management
@@ -127,7 +172,7 @@ paths:
           description: Id not found
 components:
   schemas:
-    reservationPayload:
+    Reservation:
       type: object
       properties:
         reservationCreator:
@@ -143,3 +188,12 @@ components:
       type: array
       items:
         type: object
+    Hotel:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Ocean View Resort"

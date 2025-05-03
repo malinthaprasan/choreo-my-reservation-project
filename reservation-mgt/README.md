@@ -21,7 +21,10 @@ under the License.
 
 To run the application execute below command
 
-`FLASK_APP=app.py flask run`
+```sh
+. ./exports.sh
+FLASK_APP=app.py flask run --port=8085
+```
 
 # Invoking resources
 

@@ -6,6 +6,32 @@ import requests
 from flask import Flask, jsonify, request
 from types import SimpleNamespace
 
+# db.py — for global connection pool setup
+from mysql.connector import pooling
+
+hostname = os.getenv("CHOREO_QB_DB_CONNECTION_HOSTNAME")
+port = os.getenv("CHOREO_QB_DB_CONNECTION_PORT")
+username = os.getenv("CHOREO_QB_DB_CONNECTION_USERNAME")
+password = os.getenv("CHOREO_QB_DB_CONNECTION_PASSWORD")
+databasename = os.getenv("CHOREO_QB_DB_CONNECTION_DATABASENAME")
+
+
+dbconfig = {
+    "host": hostname,
+    "port": port,
+    "user": username,
+    "password": password,
+    "database": databasename,
+    "ssl_disabled": False,
+    "ssl_verify_identity": False  # <-- do not verify hostname
+}
+
+cnx_pool = pooling.MySQLConnectionPool(
+    pool_name="mypool",
+    pool_size=5,
+    **dbconfig
+)
+
 app = Flask(__name__)
 
 print("=== start env variables ==")
@@ -56,6 +82,22 @@ def health_check():
 @app.route('/rs/reservations', methods=['GET'])
 def get_reservations():
     return str(json.dumps(reservations))
+
+@app.route('/rs/hotels', methods=['GET'])
+def list_all_hotels():
+    try:
+        conn = cnx_pool.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name FROM hotel")
+        hotels = cursor.fetchall()
+        cursor.close()
+
+        # Format response according to schema
+        hotel_list = [{"id": hotel[0], "name": hotel[1]} for hotel in hotels]
+        return jsonify(hotel_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # gives a reservation created by the user considering the reservationId
 def getReservation(reservationId):
