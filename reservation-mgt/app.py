@@ -14,7 +14,7 @@ port = os.getenv("CHOREO_QB_DB_CONNECTION_PORT")
 username = os.getenv("CHOREO_QB_DB_CONNECTION_USERNAME")
 password = os.getenv("CHOREO_QB_DB_CONNECTION_PASSWORD")
 databasename = os.getenv("CHOREO_QB_DB_CONNECTION_DATABASENAME")
-
+user_validate_url = os.getenv("CHOREO_USER_VALIDATE_CONNECTION_SERVICEURL", 'http://localhost:8080')
 
 dbconfig = {
     "host": hostname,
@@ -42,11 +42,6 @@ print("=== end env variables ====")
 # defines initial reservations
 with open('data.txt') as f:
     reservations = ast.literal_eval(f.read())
-
-# read env USER_VALIDATOR_URL
-
-USER_VALIDATOR_URL = os.getenv('USER_VALIDATOR_URL', 'http://localhost:8080')
-
 
 # route relevant to the reservation management
 @app.route('/rs/reservations/<reservationId>', methods=['GET', 'PUT', 'DELETE'])
@@ -218,7 +213,7 @@ def getReservation(reservationId):
 def addReservation(request):
     x = json.loads(request.get_data(), object_hook=lambda d: SimpleNamespace(**d))
     # validate x.contact using user validator api
-    response = requests.get(f"{USER_VALIDATOR_URL}/validate-phone?phone_number={x.reservation_contact}")
+    response = requests.get(f"{user_validate_url}/validate-phone?phone_number={x.reservation_contact}")
     validation_result = response.json()
     if not validation_result["valid"]:
         raise ValueError("Invalid phone number format")

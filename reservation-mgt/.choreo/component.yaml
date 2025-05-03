@@ -30,3 +30,5 @@ dependencies:
     connectionReferences:
     - name: qb-db-connection
       resourceRef: database:quick-booking-db/qb-db-dev
+    - name: user-validate-connection
+      resourceRef: service:/demo/user-validate/v1/5c69c/PROJECT
