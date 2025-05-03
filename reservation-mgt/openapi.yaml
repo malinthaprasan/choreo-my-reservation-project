@@ -207,6 +207,9 @@ components:
         user_contact:
           type: string
           example: "alice@example.com"
+        reservation_contact:
+          type: string
+          example: "011-123-4567"
     ReservationArray:
       type: array
       items:

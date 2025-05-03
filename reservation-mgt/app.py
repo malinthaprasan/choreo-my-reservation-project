@@ -99,7 +99,7 @@ def getHotelById(hotelId):
         cursor.execute("SELECT id, name FROM hotel WHERE id = %s", (hotelId,))
         hotel = cursor.fetchone()
         cursor.close()
-
+        conn.close()
         if hotel is None:
             return jsonify({"error": "Hotel not found"}), 404
 
@@ -116,7 +116,7 @@ def getAllHotels():
         cursor.execute("SELECT id, name FROM hotel")
         hotels = cursor.fetchall()
         cursor.close()
-
+        conn.close()
         # Format response according to schema
         hotel_list = [{"id": hotel[0], "name": hotel[1]} for hotel in hotels]
         return jsonify(hotel_list)
@@ -146,6 +146,7 @@ def getAllReservations():
         """)
         reservations = cursor.fetchall()
         cursor.close()
+        conn.close()
         # Convert date objects to string format before JSON serialization
         formatted_reservations = []
         for res in reservations:
@@ -182,7 +183,8 @@ def getReservation(reservationId):
                 hr.type as room_type,
                 u.id as user_id,
                 u.name as user_name,
-                u.contact as user_contact
+                u.contact as user_contact,
+                hrr.contact as reservation_contact
             FROM hotel_room_reservation hrr
             JOIN hotel h ON hrr.hotel_id = h.id
             JOIN hotel_room hr ON hrr.room_id = hr.id
@@ -191,7 +193,7 @@ def getReservation(reservationId):
         """, (reservationId,))
         reservation = cursor.fetchone()
         cursor.close()
-        
+        conn.close()
         if not reservation:
             return jsonify({"error": "Reservation not found"}), 404
             
@@ -205,7 +207,8 @@ def getReservation(reservationId):
             'room_type': reservation[6],
             'user_id': reservation[7],
             'user_name': reservation[8],
-            'user_contact': reservation[9]
+            'user_contact': reservation[9],
+            'reservation_contact': reservation[10]
         }
         return jsonify(formatted_res)
     except Exception as e:
@@ -215,18 +218,23 @@ def getReservation(reservationId):
 def addReservation(request):
     x = json.loads(request.get_data(), object_hook=lambda d: SimpleNamespace(**d))
     # validate x.contact using user validator api
-    response = requests.get(f"{USER_VALIDATOR_URL}/validate-phone?phone_number={x.contact}")
+    response = requests.get(f"{USER_VALIDATOR_URL}/validate-phone?phone_number={x.reservation_contact}")
     validation_result = response.json()
     if not validation_result["valid"]:
         raise ValueError("Invalid phone number format")
     
-    reservations.append({
-        "reservationCreator" : x.reservationCreator,
-		"reservationId" : x.reservationId,
-		"contact" : x.contact,})
-
-    print(reservations)
-    return str(request.get_data())
+    conn = cnx_pool.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO hotel_room_reservation 
+        (from_date, to_date, hotel_id, room_id, user_id, contact)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (x.from_date, x.to_date, x.hotel_id, x.room_id, x.user_id, x.reservation_contact))
+    reservation_id = cursor.lastrowid
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return getReservation(reservation_id)
 
 # deletes a reservation from the list of reservations considering the reservationId
 def deleteReservation(reservationId):

@@ -25,7 +25,7 @@ def validate_phone_number():
         return jsonify({"valid": False, "message": "Phone number not provided"})
 
     # Regular expression to match Sri Lankan phone numbers
-    pattern = r'^0\d{9}$'
+    pattern = r'^94\d{9}$'
     if re.match(pattern, phone_number):
         result = {"valid": True, "message": "Valid Sri Lankan phone number."}
     else:

@@ -23,6 +23,7 @@ CREATE TABLE hotel_room_reservation (
     from_date DATE NOT NULL,
     to_date DATE NOT NULL,
     user_id INT NOT NULL,
+    contact VARCHAR(100) NOT NULL,
     FOREIGN KEY (hotel_id) REFERENCES hotel(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES hotel_room(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES qb_user(id) ON DELETE CASCADE
