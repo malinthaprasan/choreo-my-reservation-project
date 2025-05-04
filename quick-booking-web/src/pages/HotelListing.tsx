@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Hotel {
   id: number;
@@ -15,48 +15,34 @@ const HotelListing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Sample hotel data - this would typically come from an API
-  const hotels: Hotel[] = [
-    { 
-      id: 1, 
-      name: "Grand Hotel",
-      imageUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      description: "Experience luxury in the heart of the city. This 5-star hotel offers spectacular views and world-class service.",
-      rating: 4.8,
-      price: 299,
-      amenities: ["Free WiFi", "Spa", "Pool", "Restaurant", "Gym"],
-      location: "Downtown"
-    },
-    { 
-      id: 2, 
-      name: "Seaside Resort",
-      imageUrl: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      description: "Escape to paradise with our beachfront resort. Wake up to stunning ocean views and pristine beaches.",
-      rating: 4.6,
-      price: 399,
-      amenities: ["Beach Access", "Pool", "Spa", "Water Sports", "Bar"],
-      location: "Beachfront"
-    },
-    { 
-      id: 3, 
-      name: "Mountain Lodge",
-      imageUrl: "https://images.unsplash.com/photo-1517840901100-8179e982acb7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      description: "A cozy retreat nestled in the mountains. Perfect for nature lovers and adventure seekers.",
-      rating: 4.7,
-      price: 249,
-      amenities: ["Hiking Trails", "Fireplace", "Restaurant", "Parking"],
-      location: "Mountain Range"
-    },
-    { 
-      id: 4, 
-      name: "City Center Hotel",
-      imageUrl: "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      description: "Modern comfort meets urban convenience. Steps away from shopping, dining and entertainment.",
-      rating: 4.5,
-      price: 199,
-      amenities: ["Business Center", "Restaurant", "Fitness Center", "Parking", "Room Service"],
-      location: "City Center"
-    }
-  ];
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        const response = await fetch('/choreo-apis/demo/reservation-mgt/v1.0/hotels');
+        const data = await response.json();
+        setHotels(data);
+      } catch (error) {
+        console.error('Error fetching hotels:', error);
+        // Set some default hotels in case of error
+        setHotels([
+          { 
+            id: 1, 
+            name: "Grand Hotel",
+            imageUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+            description: "Experience luxury in the heart of the city. This 5-star hotel offers spectacular views and world-class service.",
+            rating: 4.8,
+            price: 299,
+            amenities: ["Free WiFi", "Spa", "Pool", "Restaurant", "Gym"],
+            location: "Downtown"
+          }
+        ]);
+      }
+    };
+
+    fetchHotels();
+  }, []);
 
   const filteredHotels = hotels.filter(hotel =>
     hotel.name.toLowerCase().includes(searchTerm.toLowerCase())
