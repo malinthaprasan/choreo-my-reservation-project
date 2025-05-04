@@ -108,12 +108,21 @@ def getAllHotels():
     try:
         conn = cnx_pool.get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, name FROM hotel")
+        cursor.execute("SELECT id, name, imageUrl, description, rating, price, amenities, location FROM hotel")
         hotels = cursor.fetchall()
         cursor.close()
         conn.close()
         # Format response according to schema
-        hotel_list = [{"id": hotel[0], "name": hotel[1]} for hotel in hotels]
+        hotel_list = [{
+            "id": hotel[0],
+            "name": hotel[1],
+            "imageUrl": hotel[2],
+            "description": hotel[3],
+            "rating": float(hotel[4]) if hotel[4] else None,
+            "price": float(hotel[5]) if hotel[5] else None,
+            "amenities": hotel[6].split(',') if hotel[6] else [],
+            "location": hotel[7]
+        } for hotel in hotels]
         return jsonify(hotel_list)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

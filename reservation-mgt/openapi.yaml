@@ -222,4 +222,26 @@ components:
           example: 1
         name:
           type: string
-          example: "Ocean View Resort"
+          example: "Grand Hotel"
+        imageUrl:
+          type: string
+          example: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb"
+        description:
+          type: string
+          example: "Experience luxury in the heart of the city"
+        rating:
+          type: number
+          format: float
+          example: 4.8
+        price:
+          type: number
+          format: float
+          example: 299
+        amenities:
+          type: array
+          items:
+            type: string
+          example: ["Free WiFi", "Spa", "Pool"]
+        location:
+          type: string
+          example: "Downtown"
